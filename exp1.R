@@ -38,3 +38,7 @@ house.energy3<- left_join(house.energy, aa, by = "Zipcode")
 house.energy3<- house.energy3 %>% filter(`total val` < 2*10^6)
 plot(x=house.energy3$`total val`, y=house.energy3$`Average Energy Use`)
 cor.test(x=house.energy3$`total val`, y=house.energy3$`Average Energy Use`)
+
+
+sum(c(2,3,4,5))
+
