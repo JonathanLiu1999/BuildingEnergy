@@ -41,4 +41,4 @@ cor.test(x=house.energy3$`total val`, y=house.energy3$`Average Energy Use`)
 
 
 sum(c(2,3,4,5))
-
+length(1:100)
