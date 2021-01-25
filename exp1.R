@@ -29,7 +29,7 @@ house.energy2$`Median Year`<- substr(house.energy2$`Median Year`, 1, 4)
 
 cor.test(house.energy2$`Average Energy Use`, as.numeric(house.energy2$`Median Year`))
 
-assesor<- read.csv("Assessor_Parcels_Data_-_2015.csv")
+assesor<- read.csv("parcels.csv")
 
 aa<- as.data.frame(tapply(assesor$netTaxableValue, assesor$ZIPcode5, mean))
 aa[,2]<- row.names(aa)
