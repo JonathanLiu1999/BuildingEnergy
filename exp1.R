@@ -22,11 +22,7 @@ year$NAME<- substr(year$NAME, 7, 13)
 colnames(year)<- c("Zipcode", "Median Year")
 house.energy2<- left_join(house.energy, year, by = "Zipcode")
 plot(x = house.energy2$`Median Year`, house.energy2$`Average Energy Use`)
-
-
 house.energy2$`Median Year`<- substr(house.energy2$`Median Year`, 1, 4)
-
-
 cor.test(house.energy2$`Average Energy Use`, as.numeric(house.energy2$`Median Year`))
 
 assesor<- read.csv("parcels.csv")
@@ -38,4 +34,49 @@ house.energy3<- left_join(house.energy, aa, by = "Zipcode")
 house.energy3<- house.energy3 %>% filter(`total val` < 2*10^6)
 plot(x=house.energy3$`total val`, y=house.energy3$`Average Energy Use`)
 cor.test(x=house.energy3$`total val`, y=house.energy3$`Average Energy Use`)
+
+plants<- ebewe %>%
+  filter(PROPERTY.TYPE == "Manufacturing/Industrial Plant" ) %>%
+  select(POSTAL.CODE, SITE.ENERGY.USE.INTENSITY..EUI...kBtu.ft.., POSTAL.CODE) %>%
+  group_by(POSTAL.CODE) %>%
+  summarise(mean.consumption = mean(SITE.ENERGY.USE.INTENSITY..EUI...kBtu.ft.., na.rm = T))
+
+indus$naics<- substr(indus$naics, 1, 2)
+indus1<- indus %>%
+  group_by(zip) %>%
+  summarise(bussiness.number = sum(est)) %>%
+  filter(zip %in% office$POSTAL.CODE) %>% 
+  rename("POSTAL.CODE" = "zip")
+indus2<- indus %>%
+  filter(naics %in% c( "31", "32", "33") )%>%
+  group_by(zip) %>%
+  summarise(bussiness.number = sum(est)) %>%
+  filter(zip %in% office$POSTAL.CODE) %>% 
+  rename("POSTAL.CODE" = "zip")
+indus1<- left_join(indus1, indus2, "POSTAL.CODE")
+indus1<- indus1 %>%
+  mutate(percentage = bussiness.number.y/bussiness.number.x)
+indu.office<- left_join(plants, indus1, "POSTAL.CODE")  
+cor.test(indu.office$percentage, indu.office$mean.consumption)
+
+ebewe %>%
+  group_by(PROPERTY.TYPE) %>%
+  summarise(a = n()) %>% 
+  arrange(desc(a))
+
+demo<- read.csv("demo.csv")
+indus<- read.csv("indu.txt")
+
+
+
+
+
+
+
+
+
+
+
+
+
 
