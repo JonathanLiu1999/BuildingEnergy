@@ -57,6 +57,7 @@ indus1<- left_join(indus1, indus2, "POSTAL.CODE")
 indus1<- indus1 %>%
   mutate(percentage = bussiness.number.y/bussiness.number.x)
 indu.office<- left_join(plants, indus1, "POSTAL.CODE")  
+indu.office<- indu.office %>% filter(mean.consumption < 1000)
 cor.test(indu.office$percentage, indu.office$mean.consumption)
 
 ebewe %>%
@@ -67,16 +68,49 @@ ebewe %>%
 demo<- read.csv("demo.csv")
 indus<- read.csv("indu.txt")
 
+pop.den<- ebewe %>%
+  filter(PROPERTY.TYPE == "Office" ) %>%
+  select(POSTAL.CODE, SITE.ENERGY.USE.INTENSITY..EUI...kBtu.ft.., POSTAL.CODE) %>%
+  group_by(POSTAL.CODE) %>%
+  summarise(mean.consumption = mean(SITE.ENERGY.USE.INTENSITY..EUI...kBtu.ft.., na.rm = T))
+pop.den$POSTAL.CODE<- as.character(pop.den$POSTAL.CODE)
+aa<- aa %>%
+  rename("POSTAL.CODE" = "Zipcode")
+pop<-left_join(pop.den, aa, "POSTAL.CODE") %>%
+  filter(mean.consumption < 300)
 
+pop<- pop %>% filter(`total val`<1000000)
 
+cor.test(pop$`total val`, pop$mean.consumption) # significant
 
+library(rvest)
+library(xml2)
+scrape<- read_html("http://www.usa.com/rank/california-state--median-household-income--zip-code-rank.htm") %>%
+  html_nodes("td") %>%
+  html_text()
+scrape<- scrape[-1:-5]
+income<- scrape[seq(2, length(scrape), 3)]
+zippop<- scrape[seq(3, length(scrape), 3)]
 
+zipcode<- str_extract(zippop, "\\d+")
+pop<- str_extract(zippop, "\\d+.\\d+$")
+pop<- gsub(",", "", pop)
+income<- gsub(",", "", income)
+income<- gsub("\\$", "", income)
 
+demo<- as.data.frame(cbind(as.numeric(income), as.character(zipcode), as.numeric(pop))) 
+colnames(demo)<- c("income", "POSTAL.CODE", "population")
 
-
-
-
-
-
+multi<- ebewe %>%
+  filter(PROPERTY.TYPE == "Multifamily Housing") %>%
+  select(POSTAL.CODE, SITE.ENERGY.USE.INTENSITY..EUI...kBtu.ft.., GROSS.BUILDING.FLOOR.AREA..ft..) %>%
+  group_by(POSTAL.CODE) %>%
+  summarise(energy.consumption = mean(SITE.ENERGY.USE.INTENSITY..EUI...kBtu.ft..*GROSS.BUILDING.FLOOR.AREA..ft.., na.rm = T))
+multi$POSTAL.CODE<- as.character(multi$POSTAL.CODE)
+com<- left_join(multi, demo, "POSTAL.CODE")
+com$income<- as.numeric(com$income)
+com<- com %>% filter(energy.consumption < 8000000)
+com$population<- as.numeric(com$population)
+cor.test(com$income, com$energy.consumption)
 
 
